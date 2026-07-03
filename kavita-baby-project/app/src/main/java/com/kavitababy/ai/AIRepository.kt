@@ -77,7 +77,7 @@ class AIRepository {
                 val bodyString = response.body?.string().orEmpty()
 
                 if (!response.isSuccessful) {
-                    return@withContext "Sorry jaani, abhi connect nahi ho paaya (${response.code}). Thodi der baad try karo."
+                    return@withContext offlineFallback(question, relevantChunks, "API error ${response.code}")
                 }
 
                 val json = JSONObject(bodyString)
@@ -95,8 +95,37 @@ class AIRepository {
                 parts.getJSONObject(0).getString("text").trim()
             }
         } catch (e: Exception) {
-            "Sorry jaani, network mein dikkat lag rahi hai. Check karo connection aur dobara try karo."
+            offlineFallback(question, relevantChunks, "network error")
         }
+    }
+
+    /**
+     * Used whenever Gemini can't be reached (bad key, quota, no internet,
+     * server error, etc). Instead of just showing an error, we fall back
+     * to whatever we found locally in the PDFs via [RagSearchEngine] — no
+     * network needed for this part at all. If nothing relevant was found
+     * locally either, we say so plainly instead of pretending to answer.
+     */
+    private fun offlineFallback(
+        question: String,
+        relevantChunks: List<RagSearchEngine.RelevantChunk>,
+        reason: String
+    ): String {
+        if (relevantChunks.isEmpty()) {
+            return "Abhi AI se connect nahi ho paa rahi ($reason), aur is sawaal se " +
+                "milta-julta kuch tumhare PDF notes mein bhi nahi mila. Internet check karo " +
+                "ya thodi der baad try karo — tab tak main sirf notes mein se dhoondh sakti hoon."
+        }
+
+        val best = relevantChunks.first()
+        val extra = if (relevantChunks.size > 1) {
+            "\n\n(${relevantChunks.size - 1} aur jagah bhi isse milta-julta content mila hai " +
+                "notes mein, agar chahiye to alag se pucho.)"
+        } else ""
+
+        return "Abhi AI se connect nahi ho paa rahi ($reason), lekin tumhare notes " +
+            "\"${best.pdfName}\" (page ${best.pageNumber}) mein yeh mila:\n\n" +
+            "${best.text.trim()}$extra"
     }
 
     private fun buildPrompt(question: String, relevantChunks: List<RagSearchEngine.RelevantChunk>): String {
