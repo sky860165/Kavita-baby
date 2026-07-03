@@ -1,1 +1,45 @@
 
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Unzip source
+        run: |
+          unzip -o KavitaBabyAI-source.zip -d .
+          ls -la kavita-baby-project
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Generate Gradle Wrapper
+        working-directory: kavita-baby-project
+        run: |
+          gradle wrapper --gradle-version 8.7
+          chmod +x gradlew
+
+      - name: Inject Gemini API Key
+        working-directory: kavita-baby-project
+        run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> local.properties
+
+      - name: Build Debug APK
+        working-directory: kavita-baby-project
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KavitaBabyAI-apk
+          path: kavita-baby-project/app/build/outputs/apk/debug/*.apk
