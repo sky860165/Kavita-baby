@@ -18,9 +18,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Grant execute permission for gradlew
+      - name: Generate Gradle Wrapper
         run: |
           cd kavita-baby-project
+          gradle wrapper --gradle-version 8.7
           chmod +x gradlew
 
       - name: Inject Gemini API Key
