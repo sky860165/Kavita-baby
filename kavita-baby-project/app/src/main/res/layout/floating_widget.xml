@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/floating_widget.xml -->
+<FrameLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="120dp"
+    android:layout_height="120dp">
+
+    <ImageView
+        android:id="@+id/avatarImage"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:src="@drawable/kavita_face"
+        android:scaleType="centerCrop"
+        android:background="@drawable/circle_background" />
+
+    <!-- Animated pulse effect -->
+    <View
+        android:id="@+id/pulseEffect"
+        android:layout_width="110dp"
+        android:layout_height="110dp"
+        android:layout_gravity="center"
+        android:background="@drawable/pulse_animation" />
+
+</FrameLayout>

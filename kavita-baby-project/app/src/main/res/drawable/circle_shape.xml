@@ -1,0 +1,15 @@
+<!-- res/drawable/circle_shape.xml -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="110dp"
+    android:height="110dp"
+    android:viewportWidth="110"
+    android:viewportHeight="110">
+
+    <path
+        android:name="circle"
+        android:pathData="M55,55 m-50,0 a50,50 0 1,0 100,0 a50,50 0 1,0 -100,0"
+        android:strokeColor="#FF6B9D"
+        android:strokeWidth="3"
+        android:fillColor="#00000000" />
+
+</vector>

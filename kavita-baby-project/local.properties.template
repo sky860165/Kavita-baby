@@ -1,0 +1,16 @@
+## This file must be created locally by you — it is NOT included with real
+## values in this zip, and should never be committed to git or shared.
+##
+## Steps:
+## 1. Rename this file to "local.properties" (remove the .template part)
+##    if it isn't already, and place it in the project ROOT folder
+##    (same level as settings.gradle).
+## 2. Set sdk.dir to your Android SDK path (Android Studio sets this
+##    automatically the first time you open the project — you can leave
+##    it blank and let Android Studio fill it in).
+## 3. Paste YOUR OWN Gemini API key below (generate one at
+##    https://aistudio.google.com/apikey). Do not reuse a key that has
+##    ever been shared anywhere else — generate a fresh one for this project.
+
+sdk.dir=/path/to/your/Android/sdk
+GEMINI_API_KEY=PASTE_YOUR_OWN_KEY_HERE
