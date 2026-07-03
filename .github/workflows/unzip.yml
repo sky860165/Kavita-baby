@@ -9,16 +9,22 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Unzip the source
         run: |
           unzip -o KavitaBabyAI-source.zip -d .
-          rm KavitaBabyAI-source.zip
+          rm -f KavitaBabyAI-source.zip
+          ls -la
+          echo "--- kavita-baby-project contents ---"
+          ls -la kavita-baby-project || echo "FOLDER NOT FOUND"
 
       - name: Commit extracted files
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add -A
+          git status
           git commit -m "Extract source zip" || echo "Nothing to commit"
-          git push
+          git push origin HEAD:main
