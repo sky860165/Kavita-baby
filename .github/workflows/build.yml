@@ -56,9 +56,13 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: echo "GROK_API_KEY=${{ secrets.GROK_API_KEY }}" >> local.properties
 
-      - name: Inject Gemini API Key
+      - name: Inject Gemini API Keys
         working-directory: ${{ env.PROJECT_DIR }}
-        run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> local.properties
+        run: |
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> local.properties
+          echo "GEMINI_API_KEY_2=${{ secrets.GEMINI_API_KEY_2 }}" >> local.properties
+          echo "GEMINI_API_KEY_3=${{ secrets.GEMINI_API_KEY_3 }}" >> local.properties
+          echo "GEMINI_API_KEY_4=${{ secrets.GEMINI_API_KEY_4 }}" >> local.properties
 
       - name: Add SDK path
         working-directory: ${{ env.PROJECT_DIR }}
@@ -67,12 +71,11 @@ jobs:
       - name: Verify local.properties keys are non-empty
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          if grep -q "^GROK_API_KEY=$" local.properties; then
-            echo "::warning::GROK_API_KEY is EMPTY after injection"
-          fi
-          if grep -q "^GEMINI_API_KEY=$" local.properties; then
-            echo "::warning::GEMINI_API_KEY is EMPTY after injection"
-          fi
+          for KEY in GROK_API_KEY GEMINI_API_KEY GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4; do
+            if grep -q "^${KEY}=$" local.properties; then
+              echo "::warning::${KEY} is EMPTY after injection"
+            fi
+          done
           echo "local.properties keys present (values hidden):"
           sed 's/=.*/=<hidden>/' local.properties
 
