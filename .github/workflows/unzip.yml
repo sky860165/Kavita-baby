@@ -1,42 +1,52 @@
-name: Kavita Baby Updated
+name: Build APK
 
 on:
-  workflow_dispatch:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Unzip source
+        run: |
+          unzip -o KavitaBabyAI-source.zip -d .
+          ls -la kavita-baby-project
+
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
+          java-version: '21'
           distribution: 'temurin'
-          java-version: '17'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      # local.properties is never committed to git (see local.properties.template).
-      # It's created fresh here on every build from the repo's Actions secrets,
-      # so the real Grok/Gemini keys never touch the git history.
-      - name: Write local.properties from secrets
+      - name: Generate Gradle Wrapper
+        working-directory: kavita-baby-project
         run: |
-          echo "sdk.dir=${ANDROID_HOME}" > local.properties
-          echo "GROK_API_KEY=${{ secrets.GROK_API_KEY }}" >> local.properties
-          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> local.properties
-          echo "HF_ACCESS_TOKEN=${{ secrets.HF_ACCESS_TOKEN }}" >> local.properties
+          gradle wrapper --gradle-version 8.7
+          chmod +x gradlew
 
-      - name: Build debug APK
+      - name: Inject Grok API Key
+        working-directory: kavita-baby-project
+        run: echo "GROK_API_KEY=${{ secrets.GROK_API_KEY }}" >> local.properties
+
+      - name: Inject Gemini API Key
+        working-directory: kavita-baby-project
+        run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> local.properties
+
+      - name: Inject Hugging Face Token
+        working-directory: kavita-baby-project
+        run: echo "HF_ACCESS_TOKEN=${{ secrets.HF_ACCESS_TOKEN }}" >> local.properties
+
+      - name: Build Debug APK
+        working-directory: kavita-baby-project
         run: ./gradlew assembleDebug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kavita-baby-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: KavitaBabyAI-apk
+          path: kavita-baby-project/app/build/outputs/apk/debug/*.apk
