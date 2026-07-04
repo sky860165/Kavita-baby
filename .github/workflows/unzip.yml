@@ -14,41 +14,67 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Locate and extract KavitaBabyAI.zip
+      - name: Unzip source
         run: |
-          ZIP_PATH=$(find . -iname "KavitaBabyAI.zip" | head -n 1)
+          ZIP_PATH=$(find . -maxdepth 1 -iname "KavitaBabyAI.zip" | head -n 1)
           if [ -z "$ZIP_PATH" ]; then
-            echo "ERROR: KavitaBabyAI.zip not found in repo"
+            echo "ERROR: KavitaBabyAI.zip not found in repo root"
             exit 1
           fi
           echo "Found zip at: $ZIP_PATH"
+          rm -rf extracted
           mkdir -p extracted
           unzip -o "$ZIP_PATH" -d extracted
 
           PROJECT_DIR=$(find extracted -maxdepth 3 -iname "settings.gradle" -exec dirname {} \; | head -n 1)
           if [ -z "$PROJECT_DIR" ]; then
-            echo "ERROR: settings.gradle not found inside zip"
+            echo "ERROR: settings.gradle not found anywhere inside the zip"
+            find extracted -maxdepth 3
             exit 1
           fi
+          echo "Project root detected at: $PROJECT_DIR"
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
-      - name: Inject API keys into local.properties
-        run: |
-          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$PROJECT_DIR/local.properties"
-          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> "$PROJECT_DIR/local.properties"
-          echo "GROK_API_KEY=${{ secrets.GROK_API_KEY }}" >> "$PROJECT_DIR/local.properties"
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x "$PROJECT_DIR/gradlew"
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Generate Gradle Wrapper
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          if [ ! -f "./gradlew" ]; then
+            gradle wrapper --gradle-version 8.7
+          fi
+          chmod +x ./gradlew
+
+      - name: Inject Grok API Key
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: echo "GROK_API_KEY=${{ secrets.GROK_API_KEY }}" >> local.properties
+
+      - name: Inject Gemini API Key
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> local.properties
+
+      - name: Add SDK path
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: echo "sdk.dir=$ANDROID_SDK_ROOT" >> local.properties
+
+      - name: Verify local.properties keys are non-empty
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          if grep -q "^GROK_API_KEY=$" local.properties; then
+            echo "::warning::GROK_API_KEY is EMPTY after injection — check the repo secret exists and is named exactly GROK_API_KEY"
+          fi
+          if grep -q "^GEMINI_API_KEY=$" local.properties; then
+            echo "::warning::GEMINI_API_KEY is EMPTY after injection — check the repo secret exists and is named exactly GEMINI_API_KEY"
+          fi
+          echo "local.properties keys present (values hidden):"
+          sed 's/=.*/=<hidden>/' local.properties
 
       - name: Build debug APK
         working-directory: ${{ env.PROJECT_DIR }}
