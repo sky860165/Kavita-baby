@@ -64,6 +64,17 @@ jobs:
           echo "GEMINI_API_KEY_3=${{ secrets.GEMINI_API_KEY_3 }}" >> local.properties
           echo "GEMINI_API_KEY_4=${{ secrets.GEMINI_API_KEY_4 }}" >> local.properties
 
+      # NEW â€” Doctor Mode's live medical web search (Google Custom Search,
+      # restricted to trusted sites) needs these two. Without this step,
+      # local.properties never gets these keys and BuildConfig.GCP_API_KEY1
+      # / GCP_SEARCH_ENGINE_ID silently build as empty strings â€” the app
+      # still builds fine, web search just quietly returns no results.
+      - name: Inject GCP Search Keys
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          echo "GCP_API_KEY1=${{ secrets.GCP_API_KEY1 }}" >> local.properties
+          echo "GCP_SEARCH_ENGINE_ID=${{ secrets.GCP_SEARCH_ENGINE_ID }}" >> local.properties
+
       - name: Add SDK path
         working-directory: ${{ env.PROJECT_DIR }}
         run: echo "sdk.dir=$ANDROID_SDK_ROOT" >> local.properties
@@ -71,7 +82,7 @@ jobs:
       - name: Verify local.properties keys are non-empty
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          for KEY in GROK_API_KEY GEMINI_API_KEY GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4; do
+          for KEY in GROK_API_KEY GEMINI_API_KEY GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GCP_API_KEY1 GCP_SEARCH_ENGINE_ID; do
             if grep -q "^${KEY}=$" local.properties; then
               echo "::warning::${KEY} is EMPTY after injection"
             fi
