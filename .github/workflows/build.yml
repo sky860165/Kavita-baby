@@ -63,6 +63,10 @@ jobs:
           echo "GEMINI_API_KEY_2=${{ secrets.GEMINI_API_KEY_2 }}" >> local.properties
           echo "GEMINI_API_KEY_3=${{ secrets.GEMINI_API_KEY_3 }}" >> local.properties
           echo "GEMINI_API_KEY_4=${{ secrets.GEMINI_API_KEY_4 }}" >> local.properties
+          echo "GEMINI_API_KEY_5=${{ secrets.GEMINI_API_KEY_5 }}" >> local.properties
+          echo "GEMINI_API_KEY_6=${{ secrets.GEMINI_API_KEY_6 }}" >> local.properties
+          echo "GEMINI_API_KEY_7=${{ secrets.GEMINI_API_KEY_7 }}" >> local.properties
+          echo "GEMINI_API_KEY_8=${{ secrets.GEMINI_API_KEY_8 }}" >> local.properties
 
       # NEW â€” Doctor Mode's live medical web search (Google Custom Search,
       # restricted to trusted sites) needs these two. Without this step,
@@ -82,7 +86,7 @@ jobs:
       - name: Verify local.properties keys are non-empty
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          for KEY in GROK_API_KEY GEMINI_API_KEY GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GCP_API_KEY1 GCP_SEARCH_ENGINE_ID; do
+          for KEY in GROK_API_KEY GEMINI_API_KEY GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5 GEMINI_API_KEY_6 GEMINI_API_KEY_7 GEMINI_API_KEY_8 GCP_API_KEY1 GCP_SEARCH_ENGINE_ID; do
             if grep -q "^${KEY}=$" local.properties; then
               echo "::warning::${KEY} is EMPTY after injection"
             fi
